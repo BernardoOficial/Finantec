@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprendendo sobre indexedDB</title>
+</head>
+
+<body>
+
+    <h1>IndexedDB</h1>
+
+    <script src="./js/app/helpers/DataHelper.js"></script>
+    <script src="./js/app/models/Negociacao.js"></script>
+
+    <script>
+
+        let connection;
+
+        const openRequest = window.indexedDB.open('finantec', 2);
+
+        openRequest.onupgradeneeded = e => {
+
+            console.log("Cria ou modificar um banco já existente");
+
+            let minhaConnection = e.target.result;
+
+            if (minhaConnection.objectStoreNames.contains('negociacoes'))
+                minhaConnection.deleteObjectStore('negociacoes');
+
+            minhaConnection.createObjectStore('negociacoes', { autoIncrement: true });
+        }
+
+        openRequest.onsuccess = e => {
+
+            console.log("Conexão realizada com sucesso");
+
+            connection = e.target.result;
+        }
+
+        openRequest.onerror = e => {
+
+            console.log(e.targer.error);
+        }
+
+        function adicionar() {
+
+            let transaction = connection.transaction(["negociacoes"], "readwrite");
+
+            let store = transaction.objectStore("negociacoes");
+
+            let negociacao = new Negociacao(DataHelper.textoParaData('2001-03-27'), 1, 200);
+
+            let request = store.add(negociacao);
+
+            request.onsuccess = e => {
+
+                console.log("Negociação adicionada com sucesso");
+            }
+
+            request.onerror = e => {
+
+                console.log("Falha ao adicionar a negociação");
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
